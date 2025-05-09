@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Login y Registro - Tienda</title>
+    <link rel="stylesheet" href="auth.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+        integrity="sha512-3hGqXdtH8X89SpvXQ2lgcKh8bd3RAEfQThGEnMLN0wYN+p8Emq3f+MQsTrrMZ+LRGycVgC9HP5i6Q3nXiGRNFQ=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+
+<body>
+    <h2>Formulario de Usuario</h2>
+    <form id="userForm">
+        <div class="input-group">
+            <i class="fa fa-envelope"></i>
+            <input type="email" id="email" placeholder="Correo electrónico" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fa fa-lock"></i>
+            <input type="password" id="password" placeholder="Contraseña" required>
+        </div>
+
+        <div class="input-group">
+            <i class="fa fa-user-tag"></i>
+            <select id="rol">
+                <option value="CLIENTE">Cliente</option>
+                <option value="EMPLEADO">Empleado</option>
+            </select>
+        </div>
+
+        <button type="button" id="registerBtn">Registrar</button>
+        <button type="button" id="loginBtn">Iniciar Sesión</button>
+    </form>
+
+    <div class="controls">
+        <button type="button" id="logoutBtn">Cerrar Sesión</button>
+        <button type="button" id="checkSessionBtn">Mostrar sesión</button>
+    </div>
+
+    <div id="loader" style="display:none; text-align:center; margin-top:20px;">
+        <i class="fas fa-spinner fa-spin fa-2x"></i>
+    </div>
+
+    <h3 id="resultado"></h3>
+
+    <script>
+        const apiUrl = "http://localhost:8081";
+
+        function mostrarCarga(mostrar) {
+            document.getElementById("loader").style.display = mostrar ? "block" : "none";
+        }
+
+        document.getElementById("registerBtn").addEventListener("click", function () {
+            mostrarCarga(true);
+            fetch(`${apiUrl}/auth/register`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value,
+                    rol: document.getElementById("rol").value
+                }),
+                credentials: "include"
+            })
+                .then(res => res.text())
+                .then(data => {
+                    mostrarCarga(false);
+                    document.getElementById("resultado").innerText = data;
+                });
+        });
+
+        document.getElementById("loginBtn").addEventListener("click", function () {
+            mostrarCarga(true);
+            fetch(`${apiUrl}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    email: document.getElementById("email").value,
+                    password: document.getElementById("password").value
+                }),
+                credentials: "include"
+            })
+                .then(res => res.text())
+                .then(data => {
+                    mostrarCarga(false);
+                    document.getElementById("resultado").innerText = data;
+                });
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", function () {
+            mostrarCarga(true);
+            fetch(`${apiUrl}/auth/logout`, {
+                method: "POST",
+                credentials: "include"
+            })
+                .then(res => res.text())
+                .then(data => {
+                    mostrarCarga(false);
+                    document.getElementById("resultado").innerText = data;
+                });
+        });
+
+        document.getElementById("checkSessionBtn").addEventListener("click", function () {
+            mostrarCarga(true);
+            fetch(`${apiUrl}/auth/check`, {
+                method: "GET",
+                credentials: "include"
+            })
+                .then(res => res.text())
+                .then(data => {
+                    mostrarCarga(false);
+                    document.getElementById("resultado").innerText = data;
+                });
+        });
+
+        // Previene envío GET accidental
+        document.getElementById("userForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+        });
+
+        // Verifica sesión al cargar
+        window.addEventListener("DOMContentLoaded", () => {
+            fetch(`${apiUrl}/auth/check`, {
+                method: "GET",
+                credentials: "include"
+            })
+                .then(res => res.text())
+                .then(data => {
+                    document.getElementById("resultado").innerText = data;
+                });
+        });
+    </script>
+</body>
+
+</html>
